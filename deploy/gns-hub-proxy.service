@@ -1,0 +1,14 @@
+[Unit]
+Description=Local HTTP forwarder for gns.hub
+Requires=gns-hub-proxy.socket
+After=gns-hub-proxy.socket
+
+[Service]
+Type=exec
+ExecStart=/usr/lib/systemd/systemd-socket-proxyd 127.0.0.1:8765
+DynamicUser=yes
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+RestrictAddressFamilies=AF_INET AF_INET6 AF_UNIX

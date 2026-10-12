@@ -1,0 +1,9 @@
+[Unit]
+Description=Local HTTP socket for gns.hub
+
+[Socket]
+ListenStream=127.0.0.1:80
+NoDelay=true
+
+[Install]
+WantedBy=sockets.target

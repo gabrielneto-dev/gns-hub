@@ -20,7 +20,7 @@ CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "gns
 SERVICE = AudioService(CONFIG)
 TOKEN = secrets.token_urlsafe(32)
 LOCK = threading.Lock()
-LOCAL_HOSTS = {"127.0.0.1", "localhost", "gns.localhost"}
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "gns.localhost", "gns.hub"}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -29,7 +29,9 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _host_ok(self) -> bool:
         host = self.headers.get("Host", "")
-        return host in {f"{name}:{self.server.server_port}" for name in LOCAL_HOSTS}
+        allowed_hosts = {f"{name}:{self.server.server_port}" for name in LOCAL_HOSTS}
+        allowed_hosts.update({"gns.hub", "gns.hub:80"})
+        return host in allowed_hosts
 
     def _respond(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -58,6 +60,7 @@ class Handler(SimpleHTTPRequestHandler):
     def do_POST(self):
         origin = self.headers.get("Origin", "")
         allowed_origins = {f"http://{name}:{self.server.server_port}" for name in LOCAL_HOSTS}
+        allowed_origins.update({"http://gns.hub", "http://gns.hub:80"})
         if not self._host_ok() or origin not in allowed_origins or self.headers.get("X-GNS-Token") != TOKEN:
             self._respond(403, {"error": "Acesso não autorizado."})
             return

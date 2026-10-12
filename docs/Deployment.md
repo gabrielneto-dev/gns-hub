@@ -6,9 +6,9 @@ O hub roda como **serviço `systemd --user`**. É um processo Python padrão lig
 
 ## Endereço
 
-O endereço principal é **[http://gns.localhost:8765](http://gns.localhost:8765)**. O nome `.localhost` é reservado para a máquina local e resolve para loopback; por isso não requer alterar `/etc/hosts` nem contratar um domínio. A escuta continua restrita a `127.0.0.1`, então o hub não fica acessível pela rede de casa. A porta 8765 é fixa. O backend aceita esse nome nas verificações de `Host` e `Origin` das ações locais.
+O endereço principal é **[http://gns.hub](http://gns.hub)**. A entrada em `/etc/hosts` aponta esse nome para `127.0.0.1`. Um socket do sistema recebe apenas no loopback, na porta padrão HTTP (80), e `systemd-socket-proxyd` encaminha ao backend do usuário na porta 8765. Assim é possível digitar apenas `gns.hub` no navegador, sem expor o hub à rede de casa. O backend aceita esse nome nas verificações de `Host` e `Origin` das ações locais.
 
-Se um navegador ou configuração de proxy não resolver o nome, use `http://127.0.0.1:8765` como alternativa e verifique se o proxy ignora endereços `.localhost`.
+O endereço anterior `http://gns.localhost:8765` continua como alternativa técnica. Se o navegador estiver configurado com proxy, configure-o para ignorar `gns.hub`.
 
 ## Instalação
 
@@ -16,9 +16,10 @@ No checkout em `~/gns-hub`:
 
 ```bash
 ./scripts/install-service.sh
+sudo ./scripts/install-local-name.sh
 ```
 
-O script garante que o frontend esteja compilado, registra o arquivo `deploy/gns-hub.service` no gerenciador do usuário e habilita/inicia o serviço. A unidade não abre navegador automaticamente. Para iniciar antes do login após cada boot:
+O primeiro script garante que o frontend esteja compilado, registra `deploy/gns-hub.service` no gerenciador do usuário e habilita/inicia o serviço. O segundo requer permissão de administrador para editar `/etc/hosts` e instalar o socket do sistema. Nenhuma unidade abre navegador automaticamente. Para iniciar antes do login após cada boot:
 
 ```bash
 sudo loginctl enable-linger "$USER"
@@ -30,6 +31,7 @@ O `linger` faz o gerenciador do usuário iniciar no boot e sobreviver ao logout.
 
 ```bash
 systemctl --user status gns-hub.service
+systemctl status gns-hub-proxy.socket
 systemctl --user restart gns-hub.service
 journalctl --user -u gns-hub.service -n 50 --no-pager
 ```
@@ -39,6 +41,7 @@ Para atualizar o frontend depois de um `git pull`, execute `npm ci && npm run bu
 ## Limites
 
 - O endereço funciona apenas neste computador. Acesso por outros dispositivos exigiria outro desenho de autenticação e rede.
+- `gns.hub` é um apelido local. O acesso usa HTTP dentro do loopback, sem TLS; não use esse nome para acesso pela rede.
 - O serviço precisa que o checkout permaneça em `~/gns-hub`, conforme a unidade instalada.
 - A unidade usa `/usr/bin/python3` e `pactl` do Linux Mint, sem Node.js residente.
 

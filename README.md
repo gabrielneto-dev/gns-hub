@@ -20,13 +20,13 @@ No Linux Mint, instale o serviço do usuário uma vez:
 ./scripts/install-service.sh
 ```
 
-Depois, abra [gns.localhost:8765](http://gns.localhost:8765) em qualquer navegador deste computador. O serviço inicia a cada login e continua ativo mesmo quando o navegador é fechado. Para iniciá-lo já no boot, antes do login, habilite *linger* para o usuário com `sudo loginctl enable-linger "$USER"`. Isso exige permissão de administrador; o áudio da sessão pode ficar disponível somente depois que o usuário entrar no desktop. Veja [Deployment.md](docs/Deployment.md) para operação e diagnóstico.
+Para usar apenas **gns.hub** na barra do navegador, execute `sudo ./scripts/install-local-name.sh` uma vez. O script registra o nome local e instala um encaminhador na porta 80. Depois, abra [gns.hub](http://gns.hub) em qualquer navegador deste computador. O serviço inicia a cada login e continua ativo mesmo quando o navegador é fechado. Para iniciá-lo já no boot, antes do login, habilite *linger* para o usuário com `sudo loginctl enable-linger "$USER"`. Isso exige permissão de administrador; o áudio da sessão pode ficar disponível somente depois que o usuário entrar no desktop. Veja [Deployment.md](docs/Deployment.md) para operação e diagnóstico.
 
 ## Uso
 
 Na lista principal aparecem apenas as saídas disponíveis e visíveis. Pressione **1 a 9** para selecionar o card naquela posição; o número aparece no próprio card. Os atalhos ficam inativos em campos de texto e diálogos. Use o lápis para dar um nome personalizado, o olho para ocultar um dispositivo e a estrela para adicioná-lo à fila de favoritos. **Gerenciar** permite restaurar dispositivos ocultos e consultar os desconectados. As setas da fila mudam a ordem; **Próxima saída** avança e volta ao início, ignorando temporariamente favoritos ocultos ou indisponíveis. `Ctrl+K` abre a busca das saídas visíveis. A lista pode ser atualizada manualmente e é recarregada quando a janela recebe foco.
 
-O aplicativo opera só em `127.0.0.1`, sem conta e sem serviço externo. `gns.localhost` é um nome local para esse mesmo endereço. A ação de troca altera a saída de som do usuário atual. O microfone não é modificado.
+O aplicativo opera só em `127.0.0.1`, sem conta e sem serviço externo. `gns.hub` é um apelido local registrado neste computador. A ação de troca altera a saída de som do usuário atual. O microfone não é modificado.
 
 ## Desenvolvimento
 
