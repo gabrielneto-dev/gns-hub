@@ -6,6 +6,7 @@
 - Fundamentos: `core/overview.md`, `core/goals.md`, `core/constraints.md`, `core/glossary.md`.
 - Estado atual e próximos passos: `STATE.md`.
 - Manual de recuperação e persistência: `README.md`.
+- Especificações do produto, arquitetura e design: [`docs/README.md`](../docs/README.md).
 
 ## Branches
 

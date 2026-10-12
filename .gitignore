@@ -5,3 +5,9 @@
 # Arquivos locais do sistema
 .DS_Store
 Thumbs.db
+
+# Builds locais
+node_modules/
+dist/
+*.tsbuildinfo
+__pycache__/

@@ -11,19 +11,20 @@ Desenvolver inicialmente um hub pessoal do computador com atalhos e funcionalida
 
 - Estrutura inicial de memória e instruções compartilhadas instalada.
 - O propósito inicial foi informado pelo responsável e registrado em `CTX-FCT-20261012-desktop-hub-scope`.
+- Especificações de arquitetura, visual e stack de trabalho estão em `docs/` (rota em `MAP.md`).
 - Ainda não existem arquivos de implementação do produto.
 
 ## Em andamento
 
-- Definição das primeiras funcionalidades e escolha da plataforma/tecnologia.
+- Primeira ferramenta definida: troca de saída de áudio; automações e integrações por API ainda não definidas. Implementação ainda não iniciada.
 
 ## Bloqueios
 
-- Não há detalhes suficientes para definir implementação ou priorizar funcionalidades.
+- Outras ações, APIs e gatilhos de automação ainda não foram escolhidos.
 
 ## Decisões ativas
 
-- Nenhuma decisão técnica ou de produto documentada.
+- Stack de trabalho do protótipo: React/TypeScript/Vite/Tauri e worker Rust independente no Linux Mint, sujeita a medição de RAM; veja `docs/Technology.md` e `docs/Backend.md`.
 
 ## Perguntas críticas
 
@@ -31,5 +32,5 @@ Desenvolver inicialmente um hub pessoal do computador com atalhos e funcionalida
 
 ## Próximos passos prováveis
 
-1. Definir as primeiras funcionalidades e o ambiente-alvo (sistema operacional, formato do app e preferências técnicas).
-2. Implementar uma primeira versão pequena e atualizar o contexto conforme decisões e evidências surgirem.
+1. Criar o scaffold e a casca visual conforme `docs/Implementation Plan.md`.
+2. Implementar a ferramenta de saída de áudio descrita em `docs/Audio Output.md`, escolher a primeira automação e medir RAM antes de consolidar a stack.
