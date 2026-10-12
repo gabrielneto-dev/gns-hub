@@ -30,6 +30,8 @@ O Linux Mint inspecionado expõe PulseAudio sobre PipeWire. Nele, saídas Blueto
 
 Na tela ou card **Áudio**, mostrar o destino atual e um botão **Próxima saída**. A lista principal contém só saídas disponíveis e visíveis, com nome personalizado quando houver. A área **Gerenciar** permite ocultar/restaurar saídas e consultar as desconectadas. Favoritos formam uma fila ordenável. O botão avança para a próxima saída disponível e visível, voltando ao início após a última; com menos de duas elegíveis, fica desabilitado. Se a saída atual não estiver na fila, começa pela primeira. Favoritos desconectados ou ocultos permanecem salvos, mas são pulados até voltarem a ficar elegíveis. Após uma troca, mostrar sucesso ou erro específico, inclusive quando parte dos fluxos não pôde ser movida.
 
+Os cards visíveis recebem números **1 a 9** conforme sua ordem na lista principal. Com a aba Áudio em foco, pressionar um desses números seleciona diretamente o card correspondente pela mesma ação do botão **Selecionar**. O atalho não atua quando há busca ou diálogo aberto, enquanto o usuário digita em um campo, ou quando há uma operação em andamento. Cards após o nono continuam selecionáveis pelo mouse e pela busca.
+
 A paleta de comandos pode expor as ações **Selecionar saída de áudio…** e **Trocar entre favoritos**. Ela usa o mesmo registro de ações da tela, sem duplicar lógica. Componentes, cores, foco e estados seguem `Design.md`.
 
 ## Contrato com o worker
@@ -75,6 +77,7 @@ Os IDs lógicos apresentados à UI vêm de uma enumeração recente. O worker as
 6. Nenhum nome/endereço de dispositivo desta máquina fica fixado no código ou nos documentos públicos.
 7. A tela principal não mostra saídas indisponíveis nem ocultas; o gerenciamento permite restaurar as ocultas e renomear destinos.
 8. Com três ou mais favoritos disponíveis, cada clique avança uma posição e, após o último, retorna ao primeiro.
+9. As teclas 1–9 selecionam os primeiros nove cards visíveis, sem disparar ao digitar na busca ou editar um nome.
 
 ## Fontes técnicas
 

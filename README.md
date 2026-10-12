@@ -14,7 +14,7 @@ O comando compila a interface se necessário, inicia o serviço em `http://127.0
 
 ## Uso
 
-Na lista principal aparecem apenas as saídas disponíveis e visíveis. Use o lápis para dar um nome personalizado, o olho para ocultar um dispositivo e a estrela para adicioná-lo à fila de favoritos. **Gerenciar** permite restaurar dispositivos ocultos e consultar os desconectados. As setas da fila mudam a ordem; **Próxima saída** avança e volta ao início, ignorando temporariamente favoritos ocultos ou indisponíveis. `Ctrl+K` abre a busca das saídas visíveis. A lista pode ser atualizada manualmente e é recarregada quando a janela recebe foco.
+Na lista principal aparecem apenas as saídas disponíveis e visíveis. Pressione **1 a 9** para selecionar o card naquela posição; o número aparece no próprio card. Os atalhos ficam inativos em campos de texto e diálogos. Use o lápis para dar um nome personalizado, o olho para ocultar um dispositivo e a estrela para adicioná-lo à fila de favoritos. **Gerenciar** permite restaurar dispositivos ocultos e consultar os desconectados. As setas da fila mudam a ordem; **Próxima saída** avança e volta ao início, ignorando temporariamente favoritos ocultos ou indisponíveis. `Ctrl+K` abre a busca das saídas visíveis. A lista pode ser atualizada manualmente e é recarregada quando a janela recebe foco.
 
 O aplicativo opera só em `127.0.0.1`, sem conta e sem serviço externo. A ação de troca altera a saída de som do usuário atual. O microfone não é modificado.
 
