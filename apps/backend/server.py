@@ -20,6 +20,7 @@ CONFIG = Path(os.environ.get("XDG_CONFIG_HOME", Path.home() / ".config")) / "gns
 SERVICE = AudioService(CONFIG)
 TOKEN = secrets.token_urlsafe(32)
 LOCK = threading.Lock()
+LOCAL_HOSTS = {"127.0.0.1", "localhost", "gns.localhost"}
 
 
 class Handler(SimpleHTTPRequestHandler):
@@ -28,7 +29,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def _host_ok(self) -> bool:
         host = self.headers.get("Host", "")
-        return host in {f"127.0.0.1:{self.server.server_port}", f"localhost:{self.server.server_port}"}
+        return host in {f"{name}:{self.server.server_port}" for name in LOCAL_HOSTS}
 
     def _respond(self, status: int, payload: dict) -> None:
         body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
@@ -56,7 +57,7 @@ class Handler(SimpleHTTPRequestHandler):
 
     def do_POST(self):
         origin = self.headers.get("Origin", "")
-        allowed_origins = {f"http://127.0.0.1:{self.server.server_port}", f"http://localhost:{self.server.server_port}"}
+        allowed_origins = {f"http://{name}:{self.server.server_port}" for name in LOCAL_HOSTS}
         if not self._host_ok() or origin not in allowed_origins or self.headers.get("X-GNS-Token") != TOKEN:
             self._respond(403, {"error": "Acesso não autorizado."})
             return
@@ -95,7 +96,7 @@ def main() -> None:
         sys.exit("Interface ausente. Execute `npm install --offline && npm run build` em apps/desktop.")
     port = int(os.environ.get("GNS_HUB_PORT", "8765"))
     server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
-    url = f"http://127.0.0.1:{server.server_port}"
+    url = f"http://gns.localhost:{server.server_port}"
     print(f"gns-hub disponível em {url}", flush=True)
     if "--no-browser" not in sys.argv:
         webbrowser.open(url)

@@ -1,0 +1,18 @@
+[Unit]
+Description=gns-hub personal audio dashboard
+Documentation=https://github.com/gabrielneto-dev/gns-hub
+After=pipewire-pulse.socket
+
+[Service]
+Type=simple
+WorkingDirectory=%h/gns-hub
+ExecStart=/usr/bin/python3 %h/gns-hub/apps/backend/server.py --no-browser
+Restart=on-failure
+RestartSec=3
+UMask=0077
+Environment=PYTHONUNBUFFERED=1
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=default.target
