@@ -76,6 +76,10 @@ class Handler(SimpleHTTPRequestHandler):
                     result = SERVICE.select(body.get("id"))
                 elif self.path == "/api/audio/favorites":
                     result = SERVICE.favorites(body.get("ids"))
+                elif self.path == "/api/audio/rename":
+                    result = SERVICE.rename(body.get("id"), body.get("name"))
+                elif self.path == "/api/audio/visibility":
+                    result = SERVICE.visibility(body.get("id"), body.get("hidden"))
                 elif self.path == "/api/audio/toggle":
                     result = SERVICE.toggle()
                 else:
@@ -89,7 +93,8 @@ class Handler(SimpleHTTPRequestHandler):
 def main() -> None:
     if not (DIST / "index.html").exists():
         sys.exit("Interface ausente. Execute `npm install --offline && npm run build` em apps/desktop.")
-    server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+    port = int(os.environ.get("GNS_HUB_PORT", "8765"))
+    server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
     url = f"http://127.0.0.1:{server.server_port}"
     print(f"gns-hub disponível em {url}", flush=True)
     if "--no-browser" not in sys.argv:

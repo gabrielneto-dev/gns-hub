@@ -4,15 +4,16 @@ Status: primeira funcionalidade implementada no aplicativo local; pacote Tauri p
 
 ## Objetivo
 
-Permitir escolher a saída de som do Linux Mint sem abrir as configurações do sistema. O usuário pode alternar rapidamente entre **dois destinos favoritos** e também escolher **qualquer saída disponível** em uma lista. A troca deve afetar o áudio que já está tocando, além de definir o destino para novos áudios.
+Permitir escolher a saída de som do Linux Mint sem abrir as configurações do sistema. O usuário pode percorrer uma **fila ordenada de destinos favoritos** e escolher qualquer saída disponível e visível na lista. A troca deve afetar o áudio que já está tocando, além de definir o destino para novos áudios.
 
 ## Escopo da primeira versão
 
 - Listar saídas de reprodução detectadas, com nomes legíveis, tipo quando identificável, disponibilidade e indicação da saída ativa.
 - Tratar como destinos distintos tanto saídas separadas (por exemplo, Bluetooth, USB ou HDMI) quanto portas de uma mesma saída (por exemplo, alto-falantes e fone P2).
-- Selecionar uma saída pela lista; definir dois favoritos e alternar entre eles por um botão de troca rápida.
+- Selecionar uma saída pela lista; definir uma fila ordenada de favoritos e avançar circularmente por ela pelo botão de troca rápida.
+- Mostrar na tela principal somente destinos disponíveis e não ocultados pelo usuário. Permitir renomear cada destino e gerenciar/restaurar os ocultos em uma área separada.
 - Atualizar a saída padrão e mover imediatamente os fluxos de reprodução ativos para a saída escolhida.
-- Informar quando um favorito estiver desconectado ou uma porta indisponível; não escolher outro destino silenciosamente.
+- Pular temporariamente favoritos desconectados ou ocultos na fila; permitir consultar dispositivos indisponíveis em **Gerenciar**.
 - Atualizar o estado ao abrir a tela, ao voltar o foco e após uma troca. Um comando de atualização manual cobre mudanças de hardware enquanto a tela está aberta; observação automática de hotplug pode ser adicionada depois.
 
 ## Fora do escopo inicial
@@ -27,7 +28,7 @@ O Linux Mint inspecionado expõe PulseAudio sobre PipeWire. Nele, saídas Blueto
 
 ## Experiência de interface
 
-Na tela ou card **Áudio**, mostrar o destino atual e um botão **Trocar saída**. Abaixo, oferecer uma lista de destinos com nome, estado (ativo, disponível ou indisponível) e ação **Selecionar**. O usuário pode marcar até dois destinos como favoritos, um de cada vez; o botão só fica habilitado com dois favoritos disponíveis. Se o destino atual for um deles, o botão seleciona o outro. Se não for, seleciona o último favorito usado; sem histórico, seleciona o primeiro na ordem configurada. Se um favorito estiver indisponível, o botão fica desabilitado e explica por quê, mas a lista continua utilizável. Após uma troca, mostrar sucesso ou erro específico, inclusive quando parte dos fluxos não pôde ser movida.
+Na tela ou card **Áudio**, mostrar o destino atual e um botão **Próxima saída**. A lista principal contém só saídas disponíveis e visíveis, com nome personalizado quando houver. A área **Gerenciar** permite ocultar/restaurar saídas e consultar as desconectadas. Favoritos formam uma fila ordenável. O botão avança para a próxima saída disponível e visível, voltando ao início após a última; com menos de duas elegíveis, fica desabilitado. Se a saída atual não estiver na fila, começa pela primeira. Favoritos desconectados ou ocultos permanecem salvos, mas são pulados até voltarem a ficar elegíveis. Após uma troca, mostrar sucesso ou erro específico, inclusive quando parte dos fluxos não pôde ser movida.
 
 A paleta de comandos pode expor as ações **Selecionar saída de áudio…** e **Trocar entre favoritos**. Ela usa o mesmo registro de ações da tela, sem duplicar lógica. Componentes, cores, foco e estados seguem `Design.md`.
 
@@ -37,8 +38,10 @@ A paleta de comandos pode expor as ações **Selecionar saída de áudio…** e 
 | --- | --- | --- |
 | `audio.list_outputs` | nenhuma | destinos detectados, disponibilidade, ativo, favoritos |
 | `audio.set_output` | ID lógico de um destino listado | destino final, quantidade de fluxos movidos, avisos |
-| `audio.set_favorites` | até dois IDs lógicos distintos, em ordem | favoritos gravados ou erro de validação |
+| `audio.set_favorites` | IDs lógicos distintos, em ordem | fila gravada ou erro de validação |
 | `audio.toggle_favorite` | nenhuma | resultado de `set_output` ou motivo de indisponibilidade |
+| `audio.rename_output` | ID lógico e nome personalizado, vazio para restaurar | estado atualizado |
+| `audio.set_visibility` | ID lógico e visibilidade | estado atualizado |
 
 Os IDs lógicos apresentados à UI vêm de uma enumeração recente. O worker associa cada destino a `sink.name` e, quando existir, `port.name`; verifica tudo novamente antes de executar. Favoritos são guardados por chaves simbólicas, nunca por índices numéricos. Se uma mudança de perfil ou reconexão alterar a chave, o favorito é mostrado como não resolvido e pode ser reassociado pelo usuário.
 
@@ -55,8 +58,8 @@ Os IDs lógicos apresentados à UI vêm de uma enumeração recente. O worker as
 
 | Situação | Resposta esperada |
 | --- | --- |
-| Fone Bluetooth desconectado ou favorito ausente | Desabilitar troca para ele; manter seleção atual e oferecer lista |
-| Porta P2 indisponível | Mostrar como indisponível; não forçar perfil nem selecionar automaticamente |
+| Fone Bluetooth desconectado ou favorito ausente | Pular na fila; mantê-lo salvo para quando voltar a ficar disponível |
+| Porta P2 indisponível | Mostrar somente em **Gerenciar**; não forçar perfil nem selecionar automaticamente |
 | Servidor de áudio inacessível | Informar falha de conexão; não alterar favoritos nem apresentar estado antigo como atual |
 | Fluxo termina durante a mudança | Continuar os demais; relatar apenas falhas relevantes |
 | Mudança de porta/sink falha | Mostrar motivo e reconsultar o estado real antes de atualizar a UI |
@@ -67,9 +70,11 @@ Os IDs lógicos apresentados à UI vêm de uma enumeração recente. O worker as
 1. A lista distingue alto-falantes, fone P2, Bluetooth, USB e HDMI quando aparecerem como destinos disponíveis, sem expor IDs técnicos como rótulos principais.
 2. Alternar entre duas saídas conectadas muda o padrão e o áudio de um aplicativo já reproduzindo, sem alterar microfone.
 3. Alternar entre alto-falantes e fone P2 funciona mesmo quando compartilham o mesmo sink.
-4. Desconectar um favorito mantém o outro e mostra indisponibilidade clara; reconectar permite nova seleção após atualização.
+4. Desconectar um favorito preserva sua configuração e o retira temporariamente da rotação; reconectar permite nova seleção após atualização.
 5. A troca rápida é acessível por teclado e não executa uma ação diferente da lista.
 6. Nenhum nome/endereço de dispositivo desta máquina fica fixado no código ou nos documentos públicos.
+7. A tela principal não mostra saídas indisponíveis nem ocultas; o gerenciamento permite restaurar as ocultas e renomear destinos.
+8. Com três ou mais favoritos disponíveis, cada clique avança uma posição e, após o último, retorna ao primeiro.
 
 ## Fontes técnicas
 

@@ -103,12 +103,16 @@ class AudioService:
         try:
             data = json.loads(self.store.read_text())
             favorites = data.get("favorites", [])
+            hidden = data.get("hidden", [])
+            aliases = data.get("aliases", {})
             return {
-                "favorites": favorites if isinstance(favorites, list) else [],
+                "favorites": [item for item in favorites if isinstance(item, str)] if isinstance(favorites, list) else [],
                 "lastFavorite": data.get("lastFavorite"),
+                "hidden": [item for item in hidden if isinstance(item, str)] if isinstance(hidden, list) else [],
+                "aliases": {key: value for key, value in aliases.items() if isinstance(key, str) and isinstance(value, str)} if isinstance(aliases, dict) else {},
             }
         except (FileNotFoundError, ValueError, OSError):
-            return {"favorites": [], "lastFavorite": None}
+            return {"favorites": [], "lastFavorite": None, "hidden": [], "aliases": {}}
 
     def _save(self, settings: dict[str, Any]) -> None:
         self.store.parent.mkdir(mode=0o700, parents=True, exist_ok=True)
@@ -147,18 +151,47 @@ class AudioService:
     def state(self) -> dict[str, Any]:
         outputs, _ = self._discover()
         settings = self._settings()
+        for output in outputs:
+            output["name"] = settings["aliases"].get(output["id"], output["label"])
+            output["hidden"] = output["id"] in settings["hidden"]
         return {"outputs": outputs, "favorites": settings["favorites"], "lastFavorite": settings["lastFavorite"]}
 
     def favorites(self, ids: Any) -> dict[str, Any]:
-        if not isinstance(ids, list) or len(ids) > 2 or not all(isinstance(x, str) for x in ids) or len(ids) != len(set(ids)):
-            raise AudioError("Escolha até dois destinos diferentes.")
-        current = {output["id"] for output in self.state()["outputs"]}
+        if not isinstance(ids, list) or len(ids) > 64 or not all(isinstance(x, str) for x in ids) or len(ids) != len(set(ids)):
+            raise AudioError("A fila de favoritos é inválida.")
+        current = {output["id"] for output in self.state()["outputs"]} | set(self._settings()["favorites"])
         if any(output_id not in current for output_id in ids):
             raise AudioError("Um destino não está mais na lista. Atualize as saídas.")
         settings = self._settings()
         settings["favorites"] = ids
         if settings["lastFavorite"] not in ids:
             settings["lastFavorite"] = None
+        self._save(settings)
+        return self.state()
+
+    def rename(self, output_id: Any, name: Any) -> dict[str, Any]:
+        if not isinstance(output_id, str) or not isinstance(name, str) or len(name) > 50:
+            raise AudioError("Use um nome com até 50 caracteres.")
+        if output_id not in {output["id"] for output in self.state()["outputs"]}:
+            raise AudioError("Destino não encontrado. Atualize as saídas.")
+        settings = self._settings()
+        clean = name.strip()
+        if clean:
+            settings["aliases"][output_id] = clean
+        else:
+            settings["aliases"].pop(output_id, None)
+        self._save(settings)
+        return self.state()
+
+    def visibility(self, output_id: Any, hidden: Any) -> dict[str, Any]:
+        if not isinstance(output_id, str) or not isinstance(hidden, bool):
+            raise AudioError("Pedido de visibilidade inválido.")
+        if output_id not in {output["id"] for output in self.state()["outputs"]}:
+            raise AudioError("Destino não encontrado. Atualize as saídas.")
+        settings = self._settings()
+        settings["hidden"] = [item for item in settings["hidden"] if item != output_id]
+        if hidden:
+            settings["hidden"].append(output_id)
         self._save(settings)
         return self.state()
 
@@ -200,17 +233,10 @@ class AudioService:
 
     def toggle(self) -> dict[str, Any]:
         state = self.state()
-        favorites = state["favorites"]
-        if len(favorites) != 2:
-            raise AudioError("Configure dois favoritos para usar a troca rápida.")
         by_id = {output["id"]: output for output in state["outputs"]}
-        if any(item not in by_id or not by_id[item]["available"] for item in favorites):
-            raise AudioError("Um favorito está desconectado ou indisponível.")
+        favorites = [item for item in state["favorites"] if item in by_id and by_id[item]["available"] and not by_id[item]["hidden"]]
+        if len(favorites) < 2:
+            raise AudioError("Deixe pelo menos dois favoritos visíveis e disponíveis para alternar.")
         active = next((item["id"] for item in state["outputs"] if item["active"]), None)
-        if active == favorites[0]:
-            destination = favorites[1]
-        elif active == favorites[1]:
-            destination = favorites[0]
-        else:
-            destination = state["lastFavorite"] if state["lastFavorite"] in favorites else favorites[0]
+        destination = favorites[(favorites.index(active) + 1) % len(favorites)] if active in favorites else favorites[0]
         return self.select(destination)

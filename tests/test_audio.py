@@ -72,6 +72,41 @@ class AudioTest(unittest.TestCase):
             self.service.favorites([["not a string"]])
         self.assertFalse(any(call[0] == "set-sink-port" for call in self.fake.calls))
 
+    def test_cycle_three_destinations_and_wrap(self):
+        outputs = self.service.state()["outputs"]
+        ids = [next(item["id"] for item in outputs if item["port"] == port) for port in ("speaker", "headphones")]
+        ids.append(next(item["id"] for item in outputs if item["sink"] == "bluez"))
+        self.service.favorites(ids)
+        for expected in (ids[1], ids[2], ids[0]):
+            self.service.toggle()
+            active = next(item["id"] for item in self.service.state()["outputs"] if item["active"])
+            self.assertEqual(active, expected)
+
+    def test_hidden_and_unavailable_favorites_are_skipped(self):
+        outputs = self.service.state()["outputs"]
+        speaker = next(item["id"] for item in outputs if item["port"] == "speaker")
+        fone = next(item["id"] for item in outputs if item["port"] == "headphones")
+        bluetooth = next(item["id"] for item in outputs if item["sink"] == "bluez")
+        self.service.favorites([speaker, fone, bluetooth])
+        self.service.visibility(fone, True)
+        self.service.toggle()
+        self.assertEqual(self.fake.default, "bluez")
+        self.fake.headphones = False
+        self.service.toggle()
+        self.assertEqual(self.fake.default, "analog")
+        self.assertEqual(self.fake.port, "speaker")
+
+    def test_custom_name_and_visibility_persist(self):
+        output = self.service.state()["outputs"][0]
+        self.service.rename(output["id"], "Mesa")
+        self.service.visibility(output["id"], True)
+        fresh = AudioService(self.service.store, self.fake)
+        restored = next(item for item in fresh.state()["outputs"] if item["id"] == output["id"])
+        self.assertEqual(restored["name"], "Mesa")
+        self.assertTrue(restored["hidden"])
+        fresh.rename(output["id"], "")
+        self.assertEqual(next(item for item in fresh.state()["outputs"] if item["id"] == output["id"])["name"], output["label"])
+
 
 if __name__ == "__main__":
     unittest.main()

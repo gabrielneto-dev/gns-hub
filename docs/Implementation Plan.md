@@ -48,7 +48,7 @@ Nomes de pastas podem ser ajustados quando o scaffold real for criado. O importa
 
 ## Etapa 3 — primeira funcionalidade real: saída de áudio
 
-- Implementar [Audio Output.md](Audio%20Output.md): descoberta de sinks/portas, seleção de qualquer saída, dois favoritos e troca rápida.
+- Implementar [Audio Output.md](Audio%20Output.md): descoberta de sinks/portas, seleção de saída, nomes personalizados, visibilidade e fila ordenada de favoritos.
 - Alterar o destino padrão e mover fluxos ativos, com validação de disponibilidade e resultado parcial explícito.
 - Expor a ferramenta na interface e na paleta de comandos pelo mesmo registro de ações.
 - Persistir favoritos, mostrar estados e registrar resultado sem identificadores físicos fixados no código.
