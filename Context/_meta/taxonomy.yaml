@@ -1,0 +1,31 @@
+version: 1
+canonical_tags:
+  project:
+    - project-purpose
+    - project-scope
+    - desktop-hub
+    - shortcuts
+    - initial-features
+    - system-configuration
+  context:
+    - context-system
+    - bootstrap
+statuses:
+  - active
+  - open
+  - answered
+  - candidate
+  - planned
+  - in-progress
+  - completed
+  - cancelled
+  - experimental
+  - blocked
+  - superseded
+  - deprecated
+  - archived
+confidence:
+  - low
+  - medium
+  - high
+  - verified

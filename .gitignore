@@ -1,0 +1,7 @@
+# Configurações locais e credenciais
+.aws/
+.codex/
+
+# Arquivos locais do sistema
+.DS_Store
+Thumbs.db
